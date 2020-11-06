@@ -51,6 +51,10 @@ def auth_required(fn: Callable[..., Response]) -> Callable[..., Response]:
     def decorated(*args, **kwargs) -> Callable[..., Response]:
         if not current_app.config.get('ENABLE_AUTH'):
             return fn(*args, **kwargs)
+
+        if current_app.config.get('DISABLE_USER_MGMT'):
+            return jwt_required(fn)(*args, **kwargs)
+
         # Wrap with jwt_required as well if auth is enabled
         return jwt_required(inner)(*args, **kwargs)
 
@@ -71,6 +75,7 @@ def admin_required(fn: Callable[..., Response]) -> Callable[..., Response]:
     def decorated(*args, **kwargs) -> Callable[..., Response]:
         if not current_app.config.get('ENABLE_AUTH'):
             return fn(*args, **kwargs)
+
         # Wrap with jwt_required as well if auth is enabled
         return jwt_required(inner)(*args, **kwargs)
 

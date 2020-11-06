@@ -454,3 +454,32 @@ class TestSubmitTransformationRequest(ResourceTestBase):
                                                      "did": "123-45-678",
                                                      "service-endpoint": service_endpoint}
                                              ))
+
+    def test_submit_transformation_user_mgmt_disabled(
+            self,
+            mocker,
+            mock_rabbit_adaptor,
+            mock_docker_repo_adapter,
+            mock_jwt_required,
+    ):
+        # When DISABLE_USER_MGMT=True, we do not need to mock
+        # the requesting user - only the JWT identity claim
+        mocker.patch(
+            'servicex.resources.servicex_resource.get_jwt_identity',
+            return_value=6
+        )
+
+        cfg = {'ENABLE_AUTH': True, 'DISABLE_USER_MGMT': True}
+        client = self._test_client(rabbit_adaptor=mock_rabbit_adaptor,
+                                   docker_repo_adapter=mock_docker_repo_adapter,
+                                   extra_config=cfg)
+        response = client.post('/servicex/transformation',
+                               json=self._generate_transformation_request())
+        assert response.status_code == 200
+
+        request_id = response.json['request_id']
+
+        with client.application.app_context():
+            saved_obj = TransformRequest.return_request(request_id)
+            assert saved_obj
+            assert saved_obj.submitted_by == 6

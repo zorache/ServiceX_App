@@ -136,8 +136,12 @@ class ResourceTestBase:
         mock_user.admin = False
         mock_user.pending = False
         mocker.patch(
-            'servicex.resources.servicex_resource.UserModel.find_by_sub',
+            'servicex.decorators.UserModel.find_by_sub',
             return_value=mock_user)
+        mocker.patch(
+            'servicex.resources.servicex_resource.get_jwt_identity',
+            return_value=mock_user.id
+        )
         return mock_user
 
     @fixture
