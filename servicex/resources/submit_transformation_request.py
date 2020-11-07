@@ -149,7 +149,8 @@ class SubmitTransformationRequest(ServiceXResource):
                 app_version=self._get_app_version(),
                 code_gen_image=current_app.config['CODE_GEN_IMAGE']
             )
-            if current_app.config.get('ENABLE_AUTH'):
+            if current_app.config.get('ENABLE_AUTH') and \
+                    not current_app.config.get('DISABLE_USER_MGMT'):
                 request_rec.submitted_by = self.get_requesting_user_sub()
 
             # If we are doing the xaod_cpp workflow, then the first thing to do is make

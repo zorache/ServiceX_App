@@ -462,8 +462,6 @@ class TestSubmitTransformationRequest(ResourceTestBase):
             mock_docker_repo_adapter,
             mock_jwt_required,
     ):
-        # When DISABLE_USER_MGMT=True, we do not need to mock
-        # the requesting user - only the JWT identity claim
         mocker.patch(
             'servicex.resources.servicex_resource.get_jwt_identity',
             return_value=6
@@ -482,4 +480,4 @@ class TestSubmitTransformationRequest(ResourceTestBase):
         with client.application.app_context():
             saved_obj = TransformRequest.return_request(request_id)
             assert saved_obj
-            assert saved_obj.submitted_by == 6
+            assert saved_obj.submitted_by is None
