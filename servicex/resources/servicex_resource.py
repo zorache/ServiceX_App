@@ -33,7 +33,7 @@ from flask import current_app
 from flask_jwt_extended import get_jwt_identity
 from flask_restful import Resource
 
-from servicex.models import TransformationResult
+from servicex.models import TransformationResult, UserModel
 
 
 class ServiceXResource(Resource):
@@ -42,14 +42,17 @@ class ServiceXResource(Resource):
         return "http://" + current_app.config['ADVERTISED_HOSTNAME'] + "/" + endpoint
 
     @staticmethod
-    def get_requesting_user_sub() -> Optional[str]:
+    def get_requesting_user() -> Optional[UserModel]:
         """
         :return: User who submitted request for resource.
         If auth is enabled, this cannot be None for JWT-protected resources
         which are decorated with @auth_required or @admin_required.
         """
-        if current_app.config.get('ENABLE_AUTH'):
-            return get_jwt_identity()
+        user = None
+        cfg = current_app.config
+        if cfg.get('ENABLE_AUTH') and not cfg.get('DISABLE_USER_MGMT'):
+            user = UserModel.find_by_sub(get_jwt_identity())
+        return user
 
     @staticmethod
     def _generate_file_status_record(dataset_file, status):
